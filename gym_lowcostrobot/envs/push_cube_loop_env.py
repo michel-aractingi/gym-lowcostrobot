@@ -127,6 +127,8 @@ class PushCubeLoopEnv(Env):
         self.goal_region_low = self.goal_region_high * np.array([-1., -1., 1.])
         self.current_goal = 0 # 0 for first goal region , and 1 for second goal region
 
+        self._step = 0
+
         # indicators for the reward
 
 
@@ -248,6 +250,7 @@ class PushCubeLoopEnv(Env):
         # Step the simulation
         mujoco.mj_forward(self.model, self.data)
 
+        self._step = 0
         return self.get_observation(), {}
 
     def step(self, action):
@@ -263,7 +266,7 @@ class PushCubeLoopEnv(Env):
 
         # Compute the reward
         reward = 0# -cube_to_target
-        return observation, reward, False, False, {}
+        return observation, reward, False, False, {"step":self._step, "timestamp": self._step*self.model.opt.timestep}
 
     def render(self):
         if self.render_mode == "human":

@@ -25,8 +25,8 @@
 
 		<body name="cube" pos="0.06 0.135 0.017">
 			<freejoint name="cube"/>
-			<inertial pos="0 0 0" mass="0.1" diaginertia="0.00001125 0.00001125 0.00001125"/>
-			<geom friction="0.5" condim="3" pos="0 0 0" size="0.015 0.015 0.015" type="box" name="cube" rgba="0.5 0 0 1" priority="1"/>
+			<inertial pos="0 0 0" mass="10.5" diaginertia="0.00001125 0.00001125 0.00001125"/>
+			<geom  pos="0 0 0" size="0.015 0.015 0.015" type="box" name="cube" rgba="0.5 0 0 1" priority="1"/>
 		</body>
 
 		<camera name="camera_front" pos="0.049 0.888 0.317" xyaxes="-0.998 0.056 -0.000 -0.019 -0.335 0.942"/>

@@ -78,7 +78,7 @@ def do_sim(robot_id="6dof"):
         quit()
 
     if robot_id == "6dof":
-        path_scene = "gym_lowcostrobot/assets/low_cost_robot_6dof/pick_place_cube.xml"
+        path_scene = "gym_lowcostrobot/assets/low_cost_robot_6dof/push_cube_loop.xml"#pick_place_cube.xml"
     else:
         return
 
@@ -89,7 +89,7 @@ def do_sim(robot_id="6dof"):
     with mujoco.viewer.launch_passive(m, data) as viewer:
 
         ## position object in front of the robot
-        data.joint("cube").qpos[:3] = [0.0, -0.1, 0.01]
+        #data.joint("cube").qpos[:3] = [0.15, 0.2, 0.01]
         mujoco.mj_step(m, data)
         viewer.sync()
 
@@ -108,7 +108,9 @@ def do_sim(robot_id="6dof"):
             # self.check_joint_limits(self.data.qpos)
 
             # compute forward kinematics
-            data.qpos[-6:] = real_to_mujoco(real_pos, inverted_joints=[1, 2, 3, 5], half_inverted_joints=[4])
+            print(dxl_comm_result, dxl_error)
+            data.qpos[:6] = real_to_mujoco(real_pos, inverted_joints=[0,2,5], half_inverted_joints=[1])
+            print(data.qpos[:6])
             mujoco.mj_step(m, data)
             viewer.sync()
 

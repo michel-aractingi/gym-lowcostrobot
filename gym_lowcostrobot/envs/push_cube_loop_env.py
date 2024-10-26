@@ -217,7 +217,7 @@ class PushCubeLoopEnv(Env):
         elif self.action_mode == "joint":
             target_low = np.array([-3.14159, -1.5708, -1.48353, -1.91986, -2.96706, -1.74533])
             target_high = np.array([3.14159, 1.22173, 1.74533, 1.91986, 2.96706, 0.0523599])
-            if self.actions_in_degress: action = action * np.pi / 180.0
+            if self.actions_in_degrees: action = action * np.pi / 180.0
             target_qpos = np.array(action).clip(target_low, target_high)
 
         else:
@@ -239,7 +239,7 @@ class PushCubeLoopEnv(Env):
             "arm_qpos": self.data.qpos[self.arm_dof_id:self.arm_dof_id+self.nb_dof].astype(np.float32),
             "arm_qvel": self.data.qvel[self.arm_dof_vel_id:self.arm_dof_vel_id+self.nb_dof].astype(np.float32),
         }
-        if self.actions_in_degress:
+        if self.actions_in_degrees:
             for k in observation:
                 observation[k] *= 180.0/np.pi
 

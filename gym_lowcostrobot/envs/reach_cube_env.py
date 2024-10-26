@@ -129,7 +129,7 @@ class ReachCubeEnv(Env):
         self.ee_id = self.model.body(EE_LINK_NAME).id
 
         self.reward_type = reward_type
-        self.actions_in_degress = actions_in_degrees
+        self.actions_in_degrees = actions_in_degrees
 
     def inverse_kinematics(
         self,
@@ -216,7 +216,7 @@ class ReachCubeEnv(Env):
             current_q = self.data.qpos[self.arm_dof_id:self.arm_dof_id+self.nb_dof].astype(np.float32)
             target_low = np.array([-3.14159, -1.5708, -1.48353, -1.91986, -2.96706, -1.74533])
             target_high = np.array([3.14159, 1.22173, 1.74533, 1.91986, 2.96706, 0.0523599])
-            if self.actions_in_degress: action = action * np.pi / 180.0
+            if self.actions_in_degrees: action = action * np.pi / 180.0
             #target_qpos = np.clip(current_q + action, target_low, target_high) 
             #print(action)
             target_qpos = np.clip(action, target_low, target_high)
@@ -239,7 +239,7 @@ class ReachCubeEnv(Env):
             "arm_qpos": self.data.qpos[self.arm_dof_id:self.arm_dof_id+self.nb_dof].astype(np.float32),
             "arm_qvel": self.data.qvel[self.arm_dof_vel_id:self.arm_dof_vel_id+self.nb_dof].astype(np.float32),
         }
-        if self.actions_in_degress:
+        if self.actions_in_degrees:
             for k in observation:
                 observation[k] *= 180.0/np.pi
         #observation['agent_pose'] = np.concatenate((observation['arm_qpos'], observation['arm_qvel']))

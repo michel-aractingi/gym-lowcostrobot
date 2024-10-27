@@ -94,9 +94,9 @@ class PushCubeLoopEnv(Env):
             "arm_qvel": spaces.Box(low=-10.0, high=10.0, shape=(6,)),
         }
         if self.observation_mode in ["image", "both"]:
-            observation_subspaces["image_front"] = spaces.Box(0, 255, shape=(240, 320, 3), dtype=np.uint8)
-            observation_subspaces["image_top"] = spaces.Box(0, 255, shape=(240, 320, 3), dtype=np.uint8)
-            self.renderer = mujoco.Renderer(self.model)
+            observation_subspaces["image_front"] = spaces.Box(0, 255, shape=(120, 120, 3), dtype=np.uint8)
+            observation_subspaces["image_top"] = spaces.Box(0, 255, shape=(120, 120, 3), dtype=np.uint8)
+            self.renderer = mujoco.Renderer(self.model, width=120, height=120)
         if self.observation_mode in ["state", "both"]:
             observation_subspaces["cube_pos"] = spaces.Box(low=-10.0, high=10.0, shape=(3,))
         self.observation_space = gym.spaces.Dict(observation_subspaces)

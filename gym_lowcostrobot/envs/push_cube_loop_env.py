@@ -138,8 +138,10 @@ class PushCubeLoopEnv(Env):
         self.goal_region_1_center = self.model.geom_pos[goal_region_1_id]
         self.goal_region_2_center = self.model.geom_pos[goal_region_2_id]
 
-        self.goal_region_high = self.model.geom_size[goal_region_1_id] 
-        self.goal_region_high[:2] -= 0.008 # offset sampling region to keep cube within
+        self.goal_region_dims = self.model.geom_size[goal_region_1_id]
+
+        self.goal_region_high = np.array([0.01,0.02,0])#self.model.geom_size[goal_region_1_id] 
+        #self.goal_region_high[:2] -= 0.008 # offset sampling region to keep cube within
         self.goal_region_low = self.goal_region_high * np.array([-1., -1., 1.])
         self.current_goal = 0 # 0 for first goal region , and 1 for second goal region
         self.control_decimation = 4 # number of simulation steps per control step
@@ -354,9 +356,9 @@ class PushCubeLoopEnv(Env):
         x_cube, y_cube = self.cube_position[:2]
         w_cube = l_cube = self.cube_size
         
-        goal_center = self.goal_region_1_center if self.current_goal == 0 else self.goal_region_2_center
+        goal_center = self.goal_region_1_center if self.current_goal == 1 else self.goal_region_2_center
         x_goal, y_goal = goal_center[:2] 
-        w_goal, l_goal = self.goal_region_high[:2]
+        w_goal, l_goal = self.goal_region_dims[:2]
         
         # Calculate the overlap along the x-axis
         x_overlap = max(0, min(x_cube + w_cube, x_goal + w_goal) - max(x_cube - w_cube, x_goal - w_goal))

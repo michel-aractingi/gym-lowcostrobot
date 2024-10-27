@@ -8,6 +8,9 @@ from gymnasium import Env, spaces
 
 from gym_lowcostrobot import ASSETS_PATH, BASE_LINK_NAME, EE_LINK_NAME, koch_default_qpos
 
+EE_LIMIT_X = [-0.1, 0.1]
+EE_LIMIT_Y = [0.02, 0.17]
+EE_LIMIT_Z = [0.04, 0.15]
 
 class PushCubeLoopEnv(Env):
     """
@@ -73,8 +76,8 @@ class PushCubeLoopEnv(Env):
     """
 
     metadata = {"render_modes": ["human", "rgb_array"], "render_fps": 200}
-
-    def __init__(self, observation_mode="image", action_mode="joint", reward_type='dense', actions_in_degrees=False, render_mode=None):
+    
+    def __init__(self, observation_mode="image", action_mode="joint", reward_type='dense', actions_in_degrees=False, terminate_on_success=False, render_mode=None):
         # Load the MuJoCo model and data
         self.model = mujoco.MjModel.from_xml_path(os.path.join(ASSETS_PATH, "push_cube_loop.xml"), {})
         self.data = mujoco.MjData(self.model)
@@ -129,6 +132,9 @@ class PushCubeLoopEnv(Env):
         goal_region_1_id = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_GEOM, "goal_region_1")
         goal_region_2_id = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_GEOM, "goal_region_2")
 
+        self._geom_region_1 = self.model.geom("goal_region_1")
+        self._geom_region_2 = self.model.geom("goal_region_2")
+
         self.goal_region_1_center = self.model.geom_pos[goal_region_1_id]
         self.goal_region_2_center = self.model.geom_pos[goal_region_2_id]
 
@@ -142,10 +148,12 @@ class PushCubeLoopEnv(Env):
         # indicators for the reward
 
         self.cube_pos_id = self.model.body("cube").id
-        self.ee_id = self.model.body(BASE_LINK_NAME).id
+        self.ee_id = self.model.body(EE_LINK_NAME).id
 
         self.reward_type = reward_type
         self.actions_in_degrees = actions_in_degrees
+
+        self._terminate_on_success = terminate_on_success
 
 
     def inverse_kinematics(self, ee_target_pos, step=0.2, regularization=1e-6):
@@ -258,6 +266,13 @@ class PushCubeLoopEnv(Env):
 
         # Reset the robot to the initial position and sample the cube position
         cube_pos = self.np_random.uniform(self.goal_region_low, self.goal_region_high) 
+        if self.current_goal == 0.0:
+            self._geom_region_1.rgba[-1] = 0.0
+            self._geom_region_2.rgba[-1] = 0.3
+        else:
+            self._geom_region_1.rgba[-1] = 0.3
+            self._geom_region_2.rgba[-1] = 0.0
+
         cube_pos[:2] += (1 - self.current_goal) * self.goal_region_1_center[:2] \
                       + self.current_goal * self.goal_region_2_center[:2]
 
@@ -279,10 +294,11 @@ class PushCubeLoopEnv(Env):
         observation = self.get_observation()
 
         reward, success = self.get_reward()
+        terminated = success
         self._step += 1
-        info = {'timestamp': self.data.time, 'success': success}#self.model.opt.timestep * self._step}
+        info = {'timestamp': self.data.time, 'is_success': success}
 
-        return observation, reward, False, False, info
+        return observation, reward, terminated, False, info
 
     def render(self):
         if self.render_mode == "human":
@@ -304,9 +320,9 @@ class PushCubeLoopEnv(Env):
         self.cube_position = self.data.qpos[self.cube_dof_id:self.cube_dof_id+3]
         overlap = self.get_cube_overlap()
         # if the intersection is above 95% consider the episode a success and switch goals:
-        success = 0
+        success = False
         if overlap > 0.95:
-            success = 1
+            success = True
             reward = +5
             self.current_goal = 1 - self.current_goal
 
@@ -322,6 +338,15 @@ class PushCubeLoopEnv(Env):
             distance_to_edge = np.sqrt((self.cube_position[1] - goal_region_edge)**2)
             # max distance to edge within the box is 0.16
             reward = min(max((-distance_to_edge / 0.16) - 1, -2), -1)
+
+        ## calculate oob reward
+        gripper_pos_x, gripper_pos_y, gripper_pos_z =  self.data.xpos[self.ee_id]
+        if gripper_pos_x < EE_LIMIT_X[0] or gripper_pos_x > EE_LIMIT_X[1]  \
+           or gripper_pos_y < EE_LIMIT_Y[0] or gripper_pos_y > EE_LIMIT_Y[1] \
+           or gripper_pos_z < EE_LIMIT_Z[0] or gripper_pos_z > EE_LIMIT_Z[1]:
+            reward += -5
+
+
         return reward, success
 
 

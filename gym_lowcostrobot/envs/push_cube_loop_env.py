@@ -77,7 +77,7 @@ class PushCubeLoopEnv(Env):
 
     metadata = {"render_modes": ["human", "rgb_array"], "render_fps": 200}
     
-    def __init__(self, observation_mode="image", action_mode="joint", reward_type='dense', actions_in_degrees=False, terminate_on_success=False, render_mode=None):
+    def __init__(self, observation_mode="image", action_mode="joint", reward_type='dense', actions_in_degrees=False, terminate_on_success=True, render_mode=None):
         # Load the MuJoCo model and data
         self.model = mujoco.MjModel.from_xml_path(os.path.join(ASSETS_PATH, "push_cube_loop.xml"), {})
         self.data = mujoco.MjData(self.model)
@@ -345,7 +345,6 @@ class PushCubeLoopEnv(Env):
            or gripper_pos_y < EE_LIMIT_Y[0] or gripper_pos_y > EE_LIMIT_Y[1] \
            or gripper_pos_z < EE_LIMIT_Z[0] or gripper_pos_z > EE_LIMIT_Z[1]:
             reward += -5
-
 
         return reward, success
 
